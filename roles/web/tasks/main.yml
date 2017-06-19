@@ -1,0 +1,41 @@
+---
+- name: install and configure httpd
+  hosts: web
+  tasks:
+  - name: Install httpd
+    yum: "pkg={{ item }} state=latest"
+    with_items:
+      - httpd
+      - php
+      - php-mysql
+      - libsemanage-python
+
+  - name: Install the web page
+    template:
+      src: ../templates/index.php.j2
+      dest: /var/www/html/index.php
+
+  - name: Install the web page ressources
+    copy: src={{ item }} dest=/var/www/html
+    with_fileglob:
+            - ../files/*
+
+  - name: Creating the fonts directory
+    file: path=/var/www/html/fonts state=directory
+
+  - name: Install the web page fonts
+    copy: src={{ item }} dest=/var/www/html/fonts
+    with_fileglob:
+            - ../files/fonts/*
+
+  - name: Open port
+    firewalld: "port={{ item }}/tcp state=enabled zone=public permanent=yes immediate=true"
+    with_items:
+      - 80
+      - 443
+
+  - name: Allow httpd to connect to network
+    seboolean: name=httpd_can_network_connect state=yes persistent=yes
+
+  - name: start and enable httpd
+    service: "name=httpd state=started enabled=yes"

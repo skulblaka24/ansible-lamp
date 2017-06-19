@@ -1,0 +1,34 @@
+---
+- name: install and configure mariadb
+  hosts: db
+  tasks:
+  - name: Install mariadb
+    yum: "pkg={{ item }} state=latest"
+    with_items:
+      - mariadb
+      - mariadb-server
+      - MySQL-python
+      - php-mysql
+
+  - name: Open port
+    firewalld: "port=3306/tcp state=enabled zone=public permanent=yes immediate=true"
+
+  - name: Ensure MariaDB is properly configured
+    template:
+      src: ../templates/etc_my.cnf.d_network.cnf.j2
+      dest: /etc/my.cnf.d/network.cnf
+  - name: start and enable mariadb
+    service: "name=mariadb state=started enabled=yes"
+
+  - name: Create the database
+    mysql_db:
+      name: '{{ dbname }}'
+      state: present
+
+  - name: Create user and perms.
+    mysql_user:
+      name: '{{ dbuser }}'
+      password: '{{ dbpass }}'
+      priv: '*.*:ALL'
+      host: '%'
+      state: present
