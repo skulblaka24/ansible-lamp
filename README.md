@@ -8,5 +8,5 @@ Ansible Lamp est un repository pour déployer un service lamp simple sur deux ma
 [db] <br>
 IP_POUR_LA_BDD	dbname=NOM_BDD	dbuser=NOM_USER_BDD dbpass=PASS_BDD
 
-[web]
+[web] <br>
 IP_POUR_L_APACHE
